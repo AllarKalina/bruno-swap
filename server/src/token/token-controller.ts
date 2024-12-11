@@ -14,7 +14,7 @@ const getAllTokens = async (
   _: Request,
   res: Response<MyResponse<string[]>>
 ): Promise<void> => {
-  const worker = new Worker("./src/token/token-worker.js");
+  // const worker = new Worker("./src/token/token-worker.js");
 
   try {
     const tokens = await TokenService.getAll();
@@ -30,9 +30,9 @@ const getAllTokens = async (
   //   await collection.insertOne(tokens);
   // });
 
-  worker.on("error", (err) => {
-    console.error(err);
-  });
+  // worker.on("error", (err) => {
+  //   console.error(err);
+  // });
 };
 
 const getTokenPairs = async (
