@@ -26,7 +26,7 @@ export function useSwapQuery({
     ],
     queryFn: async () => {
       const response = await fetch(
-        `${process.env.API_BASE_URL}/api/tokens/${sellToken}/${buyToken}/${
+        `${process.env.API_URL}/api/tokens/${sellToken}/${buyToken}/${
           conversionType === "EXACT_INPUT" ? sellTokenAmount : buyTokenAmount
         }/${conversionType}/swap`
       ).then((res) => res.json());
