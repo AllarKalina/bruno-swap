@@ -11,7 +11,7 @@ export function useTokenPriceQuery({
     queryKey: ["token-price", token, amount],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8080/api/tokens/${token}/${amount}/price`
+        `${process.env.API_BASE_URL}/api/tokens/${token}/${amount}/price`
       ).then((res) => res.json());
       return response.data;
     },

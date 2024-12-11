@@ -5,7 +5,7 @@ export function useTokenPairsQuery({ token }: { token: string }) {
     queryKey: ["token-pairs", token],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8080/api/tokens/${token}/pairs`
+        `${process.env.API_BASE_URL}/api/tokens/${token}/pairs`
       ).then((res) => res.json());
       return response.data;
     },
