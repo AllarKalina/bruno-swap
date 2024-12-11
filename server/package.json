@@ -4,8 +4,9 @@
   "main": ".src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "npx tsx src/index.ts",
+    "build": "tsc",
     "start": "nodemon",
+    "prod": "npx tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
