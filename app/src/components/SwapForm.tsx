@@ -1,43 +1,55 @@
 "use client";
 
-import FormInput from "./form/FormInput";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTokenQuery } from "@/lib/useTokenQuery";
 import { useTokenPairsQuery } from "@/lib/useTokenPairsQuery";
 import { swapSchema } from "@/lib/schemas";
-import FormInputWrapper from "./form/FormInputWrapper";
-import {
-  FormCombobox,
-  FormComboboxContent,
-  FormComboboxItem,
-  FormComboboxTrigger,
-} from "./form/FormCombobox";
+import FormFieldWrapper from "./FormFieldWrapper";
 import { useTokenPriceQuery } from "@/lib/useTokenPriceQuery";
 import { useSwapQuery } from "@/lib/useSwapQuery";
 import { ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "./ui/Form";
+import { Input } from "./ui/Input";
+import {
+  DialogSelect,
+  DialogSelectContent,
+  DialogSelectItem,
+  DialogSelectTrigger,
+} from "./ui/DialogSelect";
+
+const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
+  sellToken: "",
+  sellTokenAmount: "",
+  buyToken: "",
+  buyTokenAmount: "",
+  conversionType: "EXACT_INPUT",
+};
 
 export default function SwapForm() {
+  const form = useForm<z.infer<typeof swapSchema>>({
+    resolver: zodResolver(swapSchema),
+    defaultValues: FORM_DEFAULT_VALUES,
+  });
+
   const {
-    register,
-    resetField,
-    handleSubmit,
-    watch,
     getValues,
+    resetField,
+    watch,
     setValue,
     setFocus,
     control,
-  } = useForm<z.infer<typeof swapSchema>>({
-    resolver: zodResolver(swapSchema),
-    defaultValues: {
-      sellToken: "",
-      sellTokenAmount: "",
-      buyToken: "",
-      buyTokenAmount: "",
-      conversionType: "EXACT_INPUT",
-    },
-  });
+    handleSubmit,
+  } = form;
 
   const tokenQuery = useTokenQuery({
     onFetch: (data) => {
@@ -100,181 +112,184 @@ export default function SwapForm() {
   const onSubmit = (values: z.infer<typeof swapSchema>) => {
     console.log(values);
   };
+  const renderTokenPrice = (
+    data: any,
+    amount: string,
+    defaultValue: string,
+  ) => {
+    if (!data || amount === defaultValue) return "0.00";
 
-  {
-    /*
-    <FormInputWrapper>
-      <FormInput/>
-      <Controller
-        name="sellToken"
-        control={control}
-        render={({ field }) => (
-          <FormCombobox value={field.value}>
-            <FormComboboxTrigger>
-              <FormComboboxOption key={token} value={token}>
-                Select token
-              </FormComboboxOption>
-            </FormComboboxTrigger>
-            <FormComboboxContent>
-              {tokenQuery.data.map((token) => (
-                <FormComboboxItem 
-                  key={token} 
-                  value={token}
-                  onClick={() => {
-                    field.onChange(t);
-                  }}>
-                    {token}
-                </FormComboboxItem>
-              ))}
-            </FormComboboxContent>
-          </FormCombobox>
-        )}
-      />
-    </FormInputWrapper>
-    */
-  }
+    return parseFloat(sellTokenPriceQuery.data).toFixed(2);
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <h2 className="text-slate-900 text-2xl font-semibold my-2">Swap</h2>
-      <FormInputWrapper onClick={() => setFocus("sellTokenAmount")}>
-        <Controller
-          name="sellTokenAmount"
-          control={control}
-          render={({ field }) => (
-            <FormInput
-              label="From"
-              type="number"
-              step="any"
-              lang="en"
-              autoFocus
-              placeholder="0.00"
-              price={
-                sellTokenPriceQuery.data &&
-                parseFloat(sellTokenPriceQuery.data).toFixed(2)
-              }
-              {...field}
-              onChange={(event) => {
-                const conversionType = getValues("conversionType");
-                if (conversionType === "EXACT_OUTPUT") {
-                  setValue("conversionType", "EXACT_INPUT");
-                }
-                console.log(event.target.value);
-                field.onChange(event);
-              }}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <h2 className="my-2 text-2xl font-semibold text-slate-900">Swap</h2>
+        <FormFieldWrapper onClick={() => setFocus("sellTokenAmount")}>
+          <FormField
+            control={control}
+            name="sellTokenAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-slate-500">From</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="any"
+                    autoFocus
+                    placeholder="0.00"
+                    className="relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                    {...field}
+                    onChange={(event) => {
+                      const conversionType = getValues("conversionType");
+                      if (conversionType === "EXACT_OUTPUT") {
+                        setValue("conversionType", "EXACT_INPUT");
+                      }
+                      field.onChange(event);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription
+                  className={cn(
+                    "text-sm text-slate-500",
+                    sellTokenPriceQuery.isFetching && "text-slate-400",
+                  )}
+                >
+                  {`${renderTokenPrice(sellTokenPriceQuery.data, watch("sellTokenAmount"), FORM_DEFAULT_VALUES.sellTokenAmount)}€`}
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="sellToken"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DialogSelect value={field.value}>
+                    <DialogSelectTrigger>
+                      {tokenPairsQuery.isPending ? (
+                        <div className="h-[24px] w-[30px] animate-pulse rounded-xl bg-blue-200" />
+                      ) : (
+                        "Select token"
+                      )}
+                    </DialogSelectTrigger>
+                    <DialogSelectContent>
+                      {tokenQuery.isLoading && <p>Loading...</p>}
+                      {tokenQuery.isError && <p>Something went wrong</p>}
+                      {tokenQuery.data &&
+                        tokenQuery.data.map((token) => (
+                          <DialogSelectItem
+                            key={token}
+                            value={token}
+                            disabled={token === field.value}
+                            onClick={() => {
+                              handleSellTokenChange(token);
+                              field.onChange(token);
+                            }}
+                          >
+                            {token}
+                          </DialogSelectItem>
+                        ))}
+                    </DialogSelectContent>
+                  </DialogSelect>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </FormFieldWrapper>
+        <div className="relative z-10 -my-2">
+          <button
+            disabled={!watch("sellToken") || !watch("buyToken")}
+            onClick={handleSwap}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-slate-100 p-2 transition-colors hover:bg-blue-50 disabled:hover:bg-slate-100"
+          >
+            <ChevronsUpDown
+              size={30}
+              className={cn(
+                "text-blue-600",
+                (!watch("sellToken") || !watch("buyToken")) && "text-slate-500",
+              )}
             />
-          )}
-        />
-        <Controller
-          name="sellToken"
-          control={control}
-          render={({ field }) => (
-            <FormCombobox
-              value={field.value}
-              trigger={
-                <FormComboboxTrigger>
-                  {tokenQuery.isLoading ? (
-                    <div className="animate-pulse bg-slate-300 rounded-xl w-[50px] h-[20px]" />
-                  ) : (
-                    "Select token"
-                  )}
-                </FormComboboxTrigger>
-              }
-            >
-              <FormComboboxContent>
-                {tokenQuery.isLoading && (
-                  <div className="animate-pulse w-[40px] h-hull" />
-                )}
-                {tokenQuery.isError && (
-                  <div>Error: {tokenQuery.error.message}</div>
-                )}
-                {tokenQuery.data?.map((t: string) => (
-                  <FormComboboxItem
-                    key={t}
-                    disabled={t === field.value}
-                    onClick={() => {
-                      handleSellTokenChange(t);
-                      field.onChange(t);
+          </button>
+        </div>
+        <FormFieldWrapper onClick={() => setFocus("buyTokenAmount")}>
+          <FormField
+            control={control}
+            name="buyTokenAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-slate-500">To</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="any"
+                    autoFocus
+                    placeholder="0.00"
+                    className="relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                    {...field}
+                    onChange={(event) => {
+                      const conversionType = getValues("conversionType");
+                      if (conversionType === "EXACT_INPUT") {
+                        setValue("conversionType", "EXACT_OUTPUT");
+                      }
+                      field.onChange(event);
                     }}
-                  >
-                    {t}
-                  </FormComboboxItem>
-                ))}
-              </FormComboboxContent>
-            </FormCombobox>
-          )}
-        />
-      </FormInputWrapper>
-      <div className="relative -my-2 z-10">
-        <button
-          disabled={!watch("sellToken") || !watch("buyToken")}
-          onClick={handleSwap}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 border border-slate-200 p-2 rounded-full hover:bg-blue-50 transition-colors disabled:hover:bg-slate-100"
-        >
-          <ChevronsUpDown size={30} className="text-blue-600" />
+                  />
+                </FormControl>
+                <FormDescription
+                  className={cn(
+                    "text-sm text-slate-500",
+                    buyTokenPriceQuery.isFetching && "text-slate-400",
+                  )}
+                >
+                  {`${renderTokenPrice(buyTokenPriceQuery.data, watch("buyTokenAmount"), FORM_DEFAULT_VALUES.buyTokenAmount)}€`}
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="buyToken"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DialogSelect value={field.value}>
+                    <DialogSelectTrigger>
+                      {tokenPairsQuery.isPending ? (
+                        <div className="h-[24px] w-[96px] animate-pulse rounded-xl bg-blue-200" />
+                      ) : (
+                        "Select token"
+                      )}
+                    </DialogSelectTrigger>
+                    <DialogSelectContent>
+                      {tokenPairsQuery.isLoading && <p>Loading...</p>}
+                      {tokenPairsQuery.isError && <p>Something went wrong</p>}
+                      {tokenPairsQuery.data &&
+                        tokenPairsQuery.data.map((token: string) => (
+                          <DialogSelectItem
+                            key={token}
+                            value={token}
+                            disabled={token === field.value}
+                            onClick={() => {
+                              field.onChange(token);
+                            }}
+                          >
+                            {token}
+                          </DialogSelectItem>
+                        ))}
+                    </DialogSelectContent>
+                  </DialogSelect>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </FormFieldWrapper>
+        <button className="my-2 rounded-xl bg-blue-600 p-4 font-medium text-slate-50 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+          Swap
         </button>
-      </div>
-      <FormInputWrapper onClick={() => setFocus("buyTokenAmount")}>
-        <FormInput
-          label="To"
-          type="number"
-          placeholder="0.00"
-          pattern="([[0-9]+.*[0-9]*])"
-          price={
-            buyTokenPriceQuery.data &&
-            parseFloat(buyTokenPriceQuery.data).toFixed(2)
-          }
-          {...register("buyTokenAmount", {
-            onChange: (event) => {
-              const conversionType = getValues("conversionType");
-              if (conversionType === "EXACT_INPUT") {
-                setValue("conversionType", "EXACT_OUTPUT");
-              }
-              setValue("buyTokenAmount", event.target.value);
-            },
-          })}
-        />
-        <Controller
-          name="buyToken"
-          control={control}
-          render={({ field }) => (
-            <FormCombobox
-              value={field.value}
-              trigger={
-                <FormComboboxTrigger>
-                  {tokenPairsQuery.isLoading ? (
-                    <div className="animate-pulse bg-slate-300 rounded-xl w-[50px] h-[20px]" />
-                  ) : (
-                    "Select token"
-                  )}
-                </FormComboboxTrigger>
-              }
-            >
-              <FormComboboxContent>
-                {tokenPairsQuery.isLoading && (
-                  <div className="animate-pulse w-[40px] h-hull" />
-                )}
-                {tokenPairsQuery.isError && (
-                  <div>Error: {tokenPairsQuery.error.message}</div>
-                )}
-                {tokenPairsQuery.data?.map((t: string) => (
-                  <FormComboboxItem
-                    key={t}
-                    onClick={() => {
-                      field.onChange(t);
-                    }}
-                  >
-                    {t}
-                  </FormComboboxItem>
-                ))}
-              </FormComboboxContent>
-            </FormCombobox>
-          )}
-        />
-      </FormInputWrapper>
-      <button className="bg-slate-900 text-slate-50 p-4 rounded-xl my-2 hover:bg-slate-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">
-        Swap
-      </button>
-    </form>
+      </form>
+    </Form>
   );
 }
