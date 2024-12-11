@@ -3,12 +3,12 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTokenQuery } from "@/lib/useTokenQuery";
-import { useTokenPairsQuery } from "@/lib/useTokenPairsQuery";
+import { useTokenQuery } from "@/hooks/token/useTokenQuery";
+import { useTokenPairsQuery } from "@/hooks/token/useTokenPairsQuery";
 import { swapSchema } from "@/lib/schemas";
 import FormFieldWrapper from "./FormFieldWrapper";
-import { useTokenPriceQuery } from "@/lib/useTokenPriceQuery";
-import { useSwapQuery } from "@/lib/useSwapQuery";
+import { useTokenPriceQuery } from "@/hooks/token/useTokenPriceQuery";
+import { useSwapQuery } from "@/hooks/token/useSwapQuery";
 import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
