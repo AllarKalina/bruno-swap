@@ -112,6 +112,7 @@ export default function SwapForm() {
   const onSubmit = (values: z.infer<typeof swapSchema>) => {
     console.log(values);
   };
+
   const renderTokenPrice = (
     data: any,
     amount: string,
@@ -119,7 +120,7 @@ export default function SwapForm() {
   ) => {
     if (!data || amount === defaultValue) return "0.00";
 
-    return parseFloat(sellTokenPriceQuery.data).toFixed(2);
+    return parseFloat(data).toFixed(2);
   };
 
   return (
@@ -139,7 +140,10 @@ export default function SwapForm() {
                     step="any"
                     autoFocus
                     placeholder="0.00"
-                    className="relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                    className={cn(
+                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0",
+                      sellTokenPriceQuery.isFetching && "text-slate-500",
+                    )}
                     {...field}
                     onChange={(event) => {
                       const conversionType = getValues("conversionType");
@@ -147,6 +151,15 @@ export default function SwapForm() {
                         setValue("conversionType", "EXACT_INPUT");
                       }
                       field.onChange(event);
+                      if (
+                        watch("sellTokenAmount") ===
+                        FORM_DEFAULT_VALUES.sellTokenAmount
+                      ) {
+                        setValue(
+                          "buyTokenAmount",
+                          FORM_DEFAULT_VALUES.buyTokenAmount,
+                        );
+                      }
                     }}
                   />
                 </FormControl>
@@ -227,14 +240,29 @@ export default function SwapForm() {
                     step="any"
                     autoFocus
                     placeholder="0.00"
-                    className="relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                    className={cn(
+                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0",
+                      buyTokenPriceQuery.isFetching && "text-slate-500",
+                    )}
                     {...field}
                     onChange={(event) => {
-                      const conversionType = getValues("conversionType");
+                      const [conversionType, buyTokenAmount] = getValues([
+                        "conversionType",
+                        "buyTokenAmount",
+                      ]);
                       if (conversionType === "EXACT_INPUT") {
                         setValue("conversionType", "EXACT_OUTPUT");
                       }
                       field.onChange(event);
+                      if (
+                        watch("buyTokenAmount") ===
+                        FORM_DEFAULT_VALUES.buyTokenAmount
+                      ) {
+                        setValue(
+                          "sellTokenAmount",
+                          FORM_DEFAULT_VALUES.sellTokenAmount,
+                        );
+                      }
                     }}
                   />
                 </FormControl>
