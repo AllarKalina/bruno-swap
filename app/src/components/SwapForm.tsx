@@ -26,6 +26,14 @@ import {
   DialogSelectTrigger,
 } from "./ui/DialogSelect";
 import SwapButton from "./SwapButton";
+import { useSwapMutation } from "@/hooks/token/useSwapMutation";
+import Button from "./ui/Button";
+import {
+  CheckCircle,
+  CheckCircle2,
+  CheckCircle2Icon,
+  CheckCircleIcon,
+} from "lucide-react";
 
 const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
   sellToken: "",
@@ -44,6 +52,7 @@ export default function SwapForm() {
   const {
     getValues,
     resetField,
+    reset,
     watch,
     setValue,
     setFocus,
@@ -87,6 +96,10 @@ export default function SwapForm() {
     },
   });
 
+  const tokenSwapMutation = useSwapMutation({
+    onSuccess: () => reset(),
+  });
+
   const handleSwap = () => {
     const [sellToken, buyToken] = getValues(["sellToken", "buyToken"]);
     setValue("sellToken", buyToken);
@@ -110,7 +123,11 @@ export default function SwapForm() {
   };
 
   const onSubmit = (values: z.infer<typeof swapSchema>) => {
-    console.log(values);
+    tokenSwapMutation.mutate({
+      tokenIn: values.sellToken,
+      tokenOut: values.buyToken,
+      amount: values.sellTokenAmount,
+    });
   };
 
   const renderTokenPrice = (
@@ -306,9 +323,15 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
-        <button className="my-2 rounded-xl bg-blue-600 p-4 font-medium text-slate-50 shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
-          Swap
-        </button>
+        <Button loading={tokenSwapMutation.isPending}>Swap</Button>
+        {tokenSwapMutation.isSuccess && (
+          <div className="flex items-center gap-2">
+            <CheckCircle2Icon size={18} className="shrink-0 text-emerald-500" />
+            <p className="text-sm text-slate-500">
+              Successfully swapped 200€ for 0.5 ETH
+            </p>
+          </div>
+        )}
       </form>
     </Form>
   );

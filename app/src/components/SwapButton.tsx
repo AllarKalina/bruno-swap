@@ -16,7 +16,10 @@ const SwapButton: FC<TSwapButton> = ({ iconSize, className, ...props }) => {
       )}
       {...props}
     >
-      <ChevronsUpDown size={iconSize} className="text-blue-600" />
+      <ChevronsUpDown
+        size={iconSize}
+        className={cn("text-blue-600", props.disabled && "text-slate-400")}
+      />
     </button>
   );
 };

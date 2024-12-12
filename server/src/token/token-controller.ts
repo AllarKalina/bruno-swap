@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import TokenService from "./token-service.js";
 import { Worker } from "worker_threads";
 import db from "db/connection.js";
+import crypto from "crypto";
 
 export interface TypedRequestBody<T> extends Express.Request {
   body: T;
@@ -95,11 +96,83 @@ const getSwapPrice = async (
   }
 };
 
+// Required params
+// userId
+// sourceAccountId
+// destinationAccountId
+// amount
+// ip
+
+const swapTokens = async (
+  req: Request<{
+    userId: string;
+    sourceAccountId: string;
+    destinationAccountId: string;
+    amount: string;
+    ip: string;
+  }>,
+  res: Response<MyResponse<string>>
+): Promise<void> => {
+  console.log("hit");
+  // Fetch latest token price from Striga api
+
+  const calcSig = (body: any) => {
+    const hmac = crypto.createHmac("sha256", process.env.SANDBOX_API_SECRET);
+    const time = Date.now().toString();
+
+    hmac.update(time);
+    hmac.update(process.env.METHOD);
+    hmac.update(process.env.SWAP_ENDPOINT);
+
+    const contentHash = crypto.createHash("md5");
+    contentHash.update(JSON.stringify(body));
+
+    hmac.update(contentHash.digest("hex"));
+
+    const auth = `HMAC ${time}:${hmac.digest("hex")}`;
+
+    return auth;
+  };
+
+  const body = {
+    userId: req.params.userId,
+    sourceAccountId: req.params.sourceAccountId,
+    destinationAccountId: req.params.destinationAccountId,
+    amount: req.params.amount,
+    ip: req.params.ip,
+  };
+
+  const headers = {
+    Authorization: calcSig(body),
+    "Api-Key": process.env.SANDBOX_API_KEY,
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+
+  const f = {
+    method: process.env.METHOD,
+    headers,
+    body: JSON.stringify(body),
+  };
+
+  console.log(f);
+
+  const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
+
+  const response = await fetch(fullURL, f);
+  console.log(response, "res");
+  res.status(StatusCodes.OK).send();
+};
+
 const TokenController = {
   getAllTokens,
   getTokenPairs,
   getTotalPrice,
   getSwapPrice,
+  swapTokens,
 };
+
+const url =
+  "http://localhost:8080/api/tokens/aecf2438-ade3-4563-ac48-aba3ddcf5d16/b5a20319b860aec9cef82a83a5365f7b/da41c756b86fc7b1d1f89bc479b67d46/10000/146.255.182.198/swap";
 
 export default TokenController;

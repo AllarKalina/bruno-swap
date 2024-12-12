@@ -8,7 +8,7 @@ const currencyMap = new Map([
 ]);
 
 /**
- * Gets all available tokens from the database.
+ * Gets all available currencies.
  *
  * @returns {Promise<string[]>} - An array of all available tokens
  */

@@ -30,7 +30,7 @@ export function useSwapQuery({
           process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/tokens/${sellToken}/${buyToken}/${
           conversionType === "EXACT_INPUT" ? sellTokenAmount : buyTokenAmount
-        }/${conversionType}/swap`,
+        }/${conversionType}/price/swap`,
       ).then((res) => res.json());
       onFetch(response.data);
       return response.data;

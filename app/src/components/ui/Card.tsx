@@ -8,7 +8,9 @@ type TCard = {
 
 const Card: FC<TCard> = ({ className, children }) => {
   return (
-    <div className={cn("rounded-xl bg-slate-100 p-6 shadow-sm", className)}>
+    <div
+      className={cn("rounded-xl bg-slate-100 p-4 shadow-sm sm:p-6", className)}
+    >
       {children}
     </div>
   );

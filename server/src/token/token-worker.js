@@ -7,7 +7,7 @@ const calcSig = (body) => {
   const time = Date.now().toString();
 
   hmac.update(time);
-  hmac.update(process.env.method);
+  hmac.update(process.env.METHOD);
   hmac.update(process.env.TEST_ENDPOINT);
 
   const contentHash = crypto.createHash("md5");
