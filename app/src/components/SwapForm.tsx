@@ -9,7 +9,6 @@ import { swapSchema } from "@/lib/schemas";
 import FormFieldWrapper from "./FormFieldWrapper";
 import { useTokenPriceQuery } from "@/hooks/token/useTokenPriceQuery";
 import { useSwapQuery } from "@/hooks/token/useSwapQuery";
-import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Form,
@@ -26,6 +25,7 @@ import {
   DialogSelectItem,
   DialogSelectTrigger,
 } from "./ui/DialogSelect";
+import SwapButton from "./SwapButton";
 
 const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
   sellToken: "",
@@ -141,7 +141,7 @@ export default function SwapForm() {
                     autoFocus
                     placeholder="0.00"
                     className={cn(
-                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0",
+                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0",
                       sellTokenPriceQuery.isFetching && "text-slate-500",
                     )}
                     {...field}
@@ -213,19 +213,11 @@ export default function SwapForm() {
           />
         </FormFieldWrapper>
         <div className="relative z-10 -my-2">
-          <button
-            disabled={!watch("sellToken") || !watch("buyToken")}
+          <SwapButton
             onClick={handleSwap}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-slate-100 p-2 transition-colors hover:bg-blue-50 disabled:hover:bg-slate-100"
-          >
-            <ChevronsUpDown
-              size={30}
-              className={cn(
-                "text-blue-600",
-                (!watch("sellToken") || !watch("buyToken")) && "text-slate-500",
-              )}
-            />
-          </button>
+            disabled={!watch("sellToken") || !watch("buyToken")}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          />
         </div>
         <FormFieldWrapper onClick={() => setFocus("buyTokenAmount")}>
           <FormField
@@ -241,7 +233,7 @@ export default function SwapForm() {
                     autoFocus
                     placeholder="0.00"
                     className={cn(
-                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 shadow-none focus-visible:outline-none focus-visible:ring-0",
+                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0",
                       buyTokenPriceQuery.isFetching && "text-slate-500",
                     )}
                     {...field}
@@ -314,7 +306,7 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
-        <button className="my-2 rounded-xl bg-blue-600 p-4 font-medium text-slate-50 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+        <button className="my-2 rounded-xl bg-blue-600 p-4 font-medium text-slate-50 shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
           Swap
         </button>
       </form>
