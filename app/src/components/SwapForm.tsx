@@ -25,15 +25,9 @@ import {
   DialogSelectItem,
   DialogSelectTrigger,
 } from "./ui/DialogSelect";
-import SwapButton from "./SwapButton";
 import { useSwapMutation } from "@/hooks/token/useSwapMutation";
 import Button from "./ui/Button";
-import {
-  CheckCircle,
-  CheckCircle2,
-  CheckCircle2Icon,
-  CheckCircleIcon,
-} from "lucide-react";
+import { CheckCircle2Icon, CircleAlertIcon } from "lucide-react";
 
 const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
   sellToken: "",
@@ -100,26 +94,11 @@ export default function SwapForm() {
     onSuccess: () => reset(),
   });
 
-  const handleSwap = () => {
-    const [sellToken, buyToken] = getValues(["sellToken", "buyToken"]);
-    setValue("sellToken", buyToken);
-    setValue("buyToken", sellToken);
-  };
-
   const handleSellTokenChange = (e: string) => {
-    // Case 1. Token to sell is the same as current buy token, swap tokens
-    // Case 2. Token to sell is not current buy token, update sell token and get new token
-    const [buyToken] = getValues(["sellToken", "buyToken"]);
-    const shouldSwapTokens = e === buyToken;
-
-    if (shouldSwapTokens) {
-      handleSwap();
-    } else {
-      setValue("sellToken", e);
-      setValue("buyToken", "");
-      setValue("sellTokenAmount", "");
-      setValue("buyTokenAmount", "");
-    }
+    setValue("sellToken", e);
+    setValue("buyToken", "");
+    setValue("sellTokenAmount", "");
+    setValue("buyTokenAmount", "");
   };
 
   const onSubmit = (values: z.infer<typeof swapSchema>) => {
@@ -131,7 +110,7 @@ export default function SwapForm() {
   };
 
   const renderTokenPrice = (
-    data: any,
+    data: string,
     amount: string,
     defaultValue: string,
   ) => {
@@ -158,7 +137,7 @@ export default function SwapForm() {
                     autoFocus
                     placeholder="0.00"
                     className={cn(
-                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0",
+                      "relative z-0 w-full border-none bg-transparent px-0 text-3xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0 sm:text-4xl",
                       sellTokenPriceQuery.isFetching && "text-slate-500",
                     )}
                     {...field}
@@ -205,7 +184,7 @@ export default function SwapForm() {
                         "Select token"
                       )}
                     </DialogSelectTrigger>
-                    <DialogSelectContent>
+                    <DialogSelectContent label="Select currency">
                       {tokenQuery.isLoading && <p>Loading...</p>}
                       {tokenQuery.isError && <p>Something went wrong</p>}
                       {tokenQuery.data &&
@@ -229,13 +208,6 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
-        <div className="relative z-10 -my-2">
-          <SwapButton
-            onClick={handleSwap}
-            disabled={!watch("sellToken") || !watch("buyToken")}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          />
-        </div>
         <FormFieldWrapper onClick={() => setFocus("buyTokenAmount")}>
           <FormField
             control={control}
@@ -250,15 +222,12 @@ export default function SwapForm() {
                     autoFocus
                     placeholder="0.00"
                     className={cn(
-                      "relative z-0 w-full border-none bg-transparent px-0 text-4xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0",
+                      "relative z-0 w-full border-none bg-transparent px-0 text-3xl font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-0 sm:text-4xl",
                       buyTokenPriceQuery.isFetching && "text-slate-500",
                     )}
                     {...field}
                     onChange={(event) => {
-                      const [conversionType, buyTokenAmount] = getValues([
-                        "conversionType",
-                        "buyTokenAmount",
-                      ]);
+                      const conversionType = getValues("conversionType");
                       if (conversionType === "EXACT_INPUT") {
                         setValue("conversionType", "EXACT_OUTPUT");
                       }
@@ -300,7 +269,7 @@ export default function SwapForm() {
                         "Select token"
                       )}
                     </DialogSelectTrigger>
-                    <DialogSelectContent>
+                    <DialogSelectContent label="Select token or currency">
                       {tokenPairsQuery.isLoading && <p>Loading...</p>}
                       {tokenPairsQuery.isError && <p>Something went wrong</p>}
                       {tokenPairsQuery.data &&
@@ -329,6 +298,14 @@ export default function SwapForm() {
             <CheckCircle2Icon size={18} className="shrink-0 text-emerald-500" />
             <p className="text-sm text-slate-500">
               Successfully swapped 200€ for 0.5 ETH
+            </p>
+          </div>
+        )}
+        {tokenSwapMutation.isError && (
+          <div className="flex items-center gap-2">
+            <CircleAlertIcon size={18} className="shrink-0 text-red-500" />
+            <p className="text-sm text-slate-500">
+              Oops! Something went wrong during the swap process!
             </p>
           </div>
         )}

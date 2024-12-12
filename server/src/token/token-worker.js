@@ -44,10 +44,10 @@ export const sendRequest = async () => {
 };
 
 export const fetchTokens = async () => {
-  const strigaTokens = await sendRequest();
-  if (!strigaTokens) throw Error("Failed to fetch tokens");
+  const tokens = await sendRequest();
+  if (!tokens) throw Error("Failed to fetch tokens");
 
-  parentPort.postMessage(strigaTokens);
+  parentPort.postMessage(tokens);
 };
 
 fetchTokens();

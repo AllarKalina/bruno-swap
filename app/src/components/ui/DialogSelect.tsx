@@ -40,6 +40,20 @@ const DialogSelect = ({
     ref.current = document.body;
   }, []);
 
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keyup", handleEscKey);
+
+    return () => {
+      document.removeEventListener("keyup", handleEscKey);
+    };
+  }, []);
+
   if (!isValidElement(trigger)) return null;
 
   return (
@@ -90,12 +104,16 @@ const DialogSelectTrigger = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const DialogSelectContent = ({ children }: { children: React.ReactNode }) => {
+const DialogSelectContent = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => {
   return (
-    <div className="relative z-10 flex min-w-[300px] flex-col gap-2 rounded-xl bg-slate-100 p-6">
-      <h2 className="my-2 text-2xl font-semibold text-slate-900">
-        Select token
-      </h2>
+    <div className="relative z-10 mx-2 flex w-full flex-col gap-2 rounded-xl bg-slate-100 p-4 sm:w-auto sm:min-w-[400px] sm:p-6">
+      <h2 className="my-2 text-2xl font-semibold text-slate-900">{label}</h2>
       {children}
     </div>
   );

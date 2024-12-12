@@ -1,7 +1,7 @@
 "use server";
 
 const USER_ID = "aecf2438-ade3-4563-ac48-aba3ddcf5d16";
-const tokenAccountMap = new Map([
+const tokenAccountIdMap = new Map([
   ["EUR", "b5a20319b860aec9cef82a83a5365f7b"],
   ["BTC", "79a7fd33d231c855ea18a10e7c4ef986"],
   ["USDC", "cde14caee61a558331bc1d2e42f5bc1e"],
@@ -21,11 +21,11 @@ export const tokenSwapAction = async (params: TParams) => {
   const { tokenIn, tokenOut, amount } = params;
 
   const ip = "146.255.182.198";
-  const sourceAccountId = tokenAccountMap.get(tokenIn);
-  const destinationAccountId = tokenAccountMap.get(tokenOut);
+  const sourceAccountId = tokenAccountIdMap.get(tokenIn);
+  const destinationAccountId = tokenAccountIdMap.get(tokenOut);
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tokens/${USER_ID}/${sourceAccountId}/${destinationAccountId}/${Number(amount) * 100}/${ip}/swap`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tokens/${USER_ID}/${sourceAccountId}/${destinationAccountId}/${amount}/${ip}/swap`,
     {
       method: "POST",
       headers: {
@@ -33,8 +33,6 @@ export const tokenSwapAction = async (params: TParams) => {
       },
     },
   );
-
-  console.log(response);
 
   return "tore";
 };
