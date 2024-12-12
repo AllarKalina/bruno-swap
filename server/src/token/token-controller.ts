@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
 import TokenService from "./token-service.js";
-import crypto from "crypto";
+import { calcSig } from "utils.js";
 
 interface TypedRequestBody<T> extends Express.Request {
   body: T;
@@ -83,7 +83,7 @@ const getSwapPrice = async (
 };
 
 const swapTokens = async (
-  req: Request<{
+  req: TypedRequestBody<{
     userId: string;
     sourceAccountId: string;
     destinationAccountId: string;
@@ -92,51 +92,40 @@ const swapTokens = async (
   }>,
   res: Response<MyResponse<string>>
 ): Promise<void> => {
-  const calcSig = (body: any) => {
-    const hmac = crypto.createHmac("sha256", process.env.SANDBOX_API_SECRET);
-    const time = Date.now().toString();
-
-    hmac.update(time);
-    hmac.update(process.env.METHOD);
-    hmac.update(process.env.SWAP_ENDPOINT);
-
-    const contentHash = crypto.createHash("md5");
-    contentHash.update(JSON.stringify(body));
-
-    hmac.update(contentHash.digest("hex"));
-
-    const auth = `HMAC ${time}:${hmac.digest("hex")}`;
-
-    return auth;
-  };
+  const { userId, sourceAccountId, destinationAccountId, amount, ip } =
+    req.body;
 
   const body = {
-    userId: req.params.userId,
-    sourceAccountId: req.params.sourceAccountId,
-    destinationAccountId: req.params.destinationAccountId,
-    amount: (Number(req.params.amount) * 100).toString(),
-    ip: req.params.ip,
+    userId: userId,
+    sourceAccountId: sourceAccountId,
+    destinationAccountId: destinationAccountId,
+    amount: (Number(amount) * 100).toString(),
+    ip: ip,
   };
 
-  const headers = {
-    Authorization: calcSig(body),
-    "Api-Key": process.env.SANDBOX_API_KEY,
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  };
+  try {
+    const headers = {
+      Authorization: calcSig(body),
+      "Api-Key": process.env.SANDBOX_API_KEY,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
 
-  const f = {
-    method: process.env.METHOD,
-    headers,
-    body: JSON.stringify(body),
-  };
+    const f = {
+      method: process.env.METHOD,
+      headers,
+      body: JSON.stringify(body),
+    };
 
-  const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
+    const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
 
-  const response = await fetch(fullURL, f);
-  const data = await response.json();
+    const response = await fetch(fullURL, f);
+    const data = await response.json();
 
-  res.status(StatusCodes.OK).send({ data });
+    res.status(StatusCodes.OK).send({ data });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ err: error.message });
+  }
 };
 
 const TokenController = {

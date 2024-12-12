@@ -20,19 +20,30 @@ type TParams = {
 export const tokenSwapAction = async (params: TParams) => {
   const { tokenIn, tokenOut, amount } = params;
 
-  const ip = "146.255.182.198";
+  const ip = "127.0.0.0";
   const sourceAccountId = tokenAccountIdMap.get(tokenIn);
   const destinationAccountId = tokenAccountIdMap.get(tokenOut);
 
+  const body = {
+    userId: USER_ID,
+    sourceAccountId,
+    destinationAccountId,
+    amount,
+    ip,
+  };
+
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tokens/${USER_ID}/${sourceAccountId}/${destinationAccountId}/${amount}/${ip}/swap`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/swap`,
     {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
+      body: JSON.stringify(body),
     },
   );
 
-  return "tore";
+  const data = await response.json();
+
+  return data;
 };

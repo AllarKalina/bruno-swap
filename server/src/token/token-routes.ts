@@ -16,9 +16,6 @@ tokenRouter.get(
   "/api/tokens/:tokenIn/:tokenOut/:tokenAmount/:type/price/swap",
   TokenController.getSwapPrice
 );
-tokenRouter.post(
-  "/api/tokens/:userId/:sourceAccountId/:destinationAccountId/:amount/:ip/swap",
-  TokenController.swapTokens
-);
+tokenRouter.post("/api/swap", TokenController.swapTokens);
 
 export default tokenRouter;

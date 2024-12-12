@@ -292,8 +292,10 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
-        <Button loading={tokenSwapMutation.isPending}>Swap</Button>
-        {tokenSwapMutation.isSuccess && (
+        <Button type="submit" loading={tokenSwapMutation.isPending}>
+          Swap
+        </Button>
+        {tokenSwapMutation.isSuccess && !tokenSwapMutation.isPending && (
           <div className="flex items-center gap-2">
             <CheckCircle2Icon size={18} className="shrink-0 text-emerald-500" />
             <p className="text-sm text-slate-500">
@@ -301,11 +303,11 @@ export default function SwapForm() {
             </p>
           </div>
         )}
-        {tokenSwapMutation.isError && (
+        {tokenSwapMutation.isError && !tokenSwapMutation.isPending && (
           <div className="flex items-center gap-2">
             <CircleAlertIcon size={18} className="shrink-0 text-red-500" />
             <p className="text-sm text-slate-500">
-              Oops! Something went wrong during the swap process!
+              Oops! Something went wrong during the swap process
             </p>
           </div>
         )}

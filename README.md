@@ -1,4 +1,4 @@
-# Bruno-Swap
+# Bruno Swap
 
 Bruno Swap is a web application that enables users to swap between currencies and cryptocurrencies. The app is divided into two main directories:
 
