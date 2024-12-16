@@ -42,7 +42,7 @@ export function useSwapQuery({
       sellToken !== "" &&
       buyToken !== "",
 
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   return query;

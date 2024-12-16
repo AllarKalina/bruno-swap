@@ -17,7 +17,7 @@ export function useTokenPriceQuery({
     },
     placeholderData: keepPreviousData,
     enabled: !!token && !!amount,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   return query;

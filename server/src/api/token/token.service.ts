@@ -4,7 +4,6 @@ import { Rates, Ticker } from "./token.model.js";
 import { WithoutId } from "mongodb";
 
 const LOCALE_CURRENCY = "EUR";
-export const SUPPORTED_CURRENCIES = ["EUR", "USDC", "USDT"];
 
 const currencyMap = new Map([
   ["Euros", "EUR"],
@@ -28,7 +27,7 @@ const fetchTokens = async () => {
  * Gets all available currencies.
  */
 const getAllCurrencies = async () => {
-  // fetchTokens();
+  fetchTokens();
   const availableTokens = new Set<string>();
   const result: WithoutId<Ticker> = await Rates.findOne(
     {},

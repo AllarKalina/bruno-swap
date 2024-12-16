@@ -84,13 +84,30 @@ const getSwapPrice = async (
   }
 };
 
+const USER_ID = "aecf2438-ade3-4563-ac48-aba3ddcf5d16";
+const tokenAccountIdMap = new Map([
+  ["EUR", "b5a20319b860aec9cef82a83a5365f7b"],
+  ["BTC", "79a7fd33d231c855ea18a10e7c4ef986"],
+  ["USDC", "cde14caee61a558331bc1d2e42f5bc1e"],
+  ["USDT", "27a0e40daa1e46ea28bc42294d1bbc11"],
+  ["ETH", "da41c756b86fc7b1d1f89bc479b67d46"],
+  ["BNB", "cb3bc0c0705957d24dfe67ce064258c1"],
+  ["POL", "2c2463056443560133570eb4fe1602b7"],
+]);
+
+const smallestUnitMap = new Map([
+  ["ETH", 10 ** 18],
+  ["POL", 10 ** 18],
+  ["MATIC", 10 ** 18],
+  ["BTC", 10 ** 8],
+  ["BNB", 10 ** 8],
+]);
+
 const swapTokens = async (
   req: TypedRequestBody<{
-    userId: string;
-    sourceAccountId: string;
-    destinationAccountId: string;
+    tokenIn: string;
+    tokenOut: string;
     amount: string;
-    ip: string;
   }>,
   res: Response<
     TypedResponse<{
@@ -108,15 +125,20 @@ const swapTokens = async (
   >,
   next: NextFunction
 ) => {
-  const { userId, sourceAccountId, destinationAccountId, amount, ip } =
-    req.body;
+  const { tokenIn, tokenOut, amount } = req.body;
+
+  const sourceAccountId = tokenAccountIdMap.get(tokenIn);
+  const destinationAccountId = tokenAccountIdMap.get(tokenOut);
+  const smallestUnit = smallestUnitMap.get(tokenIn);
 
   const body = {
-    userId: userId,
+    userId: USER_ID,
     sourceAccountId: sourceAccountId,
     destinationAccountId: destinationAccountId,
-    amount: (Number(amount) * 100).toString(),
-    ip: ip,
+    amount: smallestUnit
+      ? (Number(amount) * smallestUnit).toString()
+      : (Number(amount) * 100).toString(),
+    ip: "127.0.0.1",
   };
 
   try {

@@ -14,7 +14,7 @@ export function useTokenQuery({
       onFetch(response.data);
       return response.data;
     },
-    refetchInterval: 1000000,
+    refetchInterval: 5000,
     retry: false,
   });
 
