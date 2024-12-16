@@ -53,6 +53,7 @@ export default function SwapForm() {
     setFocus,
     control,
     handleSubmit,
+    formState: { isValid, isSubmitting },
   } = form;
 
   const tokenQuery = useTokenQuery({
@@ -328,7 +329,11 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
-        <Button type="submit" loading={tokenSwapMutation.isPending}>
+        <Button
+          disabled={!isValid}
+          type="submit"
+          loading={tokenSwapMutation.isPending}
+        >
           Swap
         </Button>
         {tokenSwapMutation.data &&
@@ -354,7 +359,9 @@ export default function SwapForm() {
             <p className="text-sm text-slate-500">
               {tokenSwapMutation.data?.message === "31088"
                 ? "Order is below minimum size"
-                : "Oops! Something went wrong during the swap process"}
+                : tokenSwapMutation.data?.message === "31090"
+                  ? "Insufficient balance"
+                  : "Oops! Something went wrong during the swap process"}
             </p>
           </div>
         )}
