@@ -142,9 +142,9 @@ const swapTokens = async (
     const response = await fetch(fullURL, f);
     const responseJson = await response.json();
 
-    if (responseJson.errorCode) {
-      throw new Error(responseJson.errorCode);
-    }
+    // if (responseJson.errorCode) {
+    //   throw new Error(responseJson.errorCode);
+    // }
 
     res.status(StatusCodes.OK).json({
       data: {
