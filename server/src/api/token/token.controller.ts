@@ -92,20 +92,7 @@ const swapTokens = async (
     amount: string;
     ip: string;
   }>,
-  res: Response<
-    TypedResponse<{
-      debit: {
-        currency?: string;
-        amount?: string;
-        amountFloat?: string;
-      };
-      credit: {
-        currency?: string;
-        amount?: string;
-        amountFloat?: string;
-      };
-    }>
-  >,
+  res: Response<TypedResponse<string>>,
   next: NextFunction
 ) => {
   const { userId, sourceAccountId, destinationAccountId, amount, ip } =
@@ -140,17 +127,13 @@ const swapTokens = async (
     const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
 
     const response = await fetch(fullURL, f);
-    const responseJson = await response.json();
 
     // if (responseJson.errorCode) {
     //   throw new Error(responseJson.errorCode);
     // }
 
     res.status(StatusCodes.OK).json({
-      data: {
-        debit: responseJson.order.debit,
-        credit: responseJson.order.credit,
-      },
+      data: "nice",
     });
   } catch (error) {
     res.status(400).json({ err: error.message });
