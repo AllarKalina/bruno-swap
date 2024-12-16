@@ -29,6 +29,7 @@ import { useSwapMutation } from "@/hooks/token/useSwapMutation";
 import Button from "./ui/Button";
 import { CheckCircle2Icon, CircleAlertIcon } from "lucide-react";
 import SwapButton from "./SwapButton";
+import useDebounce from "@/hooks/usDebounce";
 
 const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
   sellToken: "",
@@ -53,8 +54,11 @@ export default function SwapForm() {
     setFocus,
     control,
     handleSubmit,
-    formState: { isValid, isSubmitting },
+    formState: { isValid },
   } = form;
+
+  const debouncedSellTokenInput = useDebounce(watch("sellTokenAmount"));
+  const debouncedBuyTokenInput = useDebounce(watch("sellTokenAmount"));
 
   const tokenQuery = useTokenQuery({
     onFetch: (data) => {
@@ -69,12 +73,12 @@ export default function SwapForm() {
 
   const sellTokenPriceQuery = useTokenPriceQuery({
     token: watch("sellToken"),
-    amount: watch("sellTokenAmount"),
+    amount: debouncedSellTokenInput,
   });
 
   const buyTokenPriceQuery = useTokenPriceQuery({
     token: watch("buyToken"),
-    amount: watch("buyTokenAmount"),
+    amount: debouncedBuyTokenInput,
   });
 
   useSwapQuery({
