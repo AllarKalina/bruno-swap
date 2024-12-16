@@ -119,6 +119,8 @@ const swapTokens = async (
     ip: ip,
   };
 
+  console.log(body);
+
   try {
     const headers = {
       Authorization: calcSig({
@@ -137,7 +139,11 @@ const swapTokens = async (
       body: JSON.stringify(body),
     };
 
+    console.log(f);
+
     const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
+
+    console.log(fullURL);
 
     const response = await fetch(fullURL, f);
     const responseJson = await response.json();

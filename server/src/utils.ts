@@ -33,8 +33,8 @@ export const calcSig = <T>({
 //   },
 //   body: JSON.stringify({
 //     userId: "aecf2438-ade3-4563-ac48-aba3ddcf5d16",
-//     sourceAccountId: "da41c756b86fc7b1d1f89bc479b67d46",
-//     destinationAccountId: "b5a20319b860aec9cef82a83a5365f7b",
+//     sourceAccountId: "b5a20319b860aec9cef82a83a5365f7b",
+//     destinationAccountId: "da41c756b86fc7b1d1f89bc479b67d46",
 //     amount: "1000",
 //     ip: "127.0.0.1",
 //   }),
