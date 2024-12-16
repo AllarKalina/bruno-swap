@@ -1,39 +1,39 @@
 import { StatusCodes } from "http-status-codes";
-import { Request, Response } from "express";
-import TokenService from "./token-service.js";
+import { NextFunction, Request, Response } from "express";
+import TokenService from "./token.service.js";
 import { calcSig } from "utils.js";
 
 interface TypedRequestBody<T> extends Express.Request {
   body: T;
 }
 
-type MyResponse<T> = { err: string } | { data: T };
+type TypedResponse<T> = { err: string } | { data: T };
 
-const getAllTokens = async (
+const getAll = async (
   _: Request,
-  res: Response<MyResponse<string[]>>
-): Promise<void> => {
+  res: Response<TypedResponse<string[]>>,
+  next: NextFunction
+) => {
   try {
-    const tokens = TokenService.getAllCurrencies();
-    res.status(StatusCodes.OK).send({ data: tokens });
+    const tokens = await TokenService.getAllCurrencies();
+    res.status(StatusCodes.OK).json({ data: tokens });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      err: error.message,
-    });
+    next(error);
   }
 };
 
-const getCurrencyPairs = async (
+const getPairs = async (
   req: Request<{ currency: string }>,
-  res: Response<MyResponse<string[]>>
-): Promise<void> => {
+  res: Response<TypedResponse<string[]>>,
+  next: NextFunction
+) => {
   const { currency } = req.params;
 
   try {
     const tokenPairs = await TokenService.getPairs({ currency });
-    res.status(StatusCodes.OK).send({ data: tokenPairs });
+    res.status(StatusCodes.OK).json({ data: tokenPairs });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ err: error.message });
+    next(error);
   }
 };
 
@@ -65,13 +65,14 @@ const getSwapPrice = async (
     tokenAmount: string;
     type: "EXACT_INPUT" | "EXACT_OUTPUT";
   }>,
-  res: Response<MyResponse<string>>
+  res: Response<TypedResponse<string>>
 ): Promise<void> => {
   const { tokenIn, tokenOut, tokenAmount, type } = req.params;
 
   try {
     const tokenPair = await TokenService.getPair({ tokenIn, tokenOut });
     const price = TokenService.calculateSwapPrice({
+      tokenIn,
       tokenAmount,
       tokenPair,
       type,
@@ -90,7 +91,7 @@ const swapTokens = async (
     amount: string;
     ip: string;
   }>,
-  res: Response<MyResponse<string>>
+  res: Response<TypedResponse<string>>
 ): Promise<void> => {
   const { userId, sourceAccountId, destinationAccountId, amount, ip } =
     req.body;
@@ -105,7 +106,11 @@ const swapTokens = async (
 
   try {
     const headers = {
-      Authorization: calcSig(body),
+      Authorization: calcSig({
+        body,
+        method: process.env.METHOD,
+        endpoint: process.env.SWAP_ENDPOINT,
+      }),
       "Api-Key": process.env.SANDBOX_API_KEY,
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -121,6 +126,7 @@ const swapTokens = async (
 
     const response = await fetch(fullURL, f);
     const data = await response.json();
+    console.log(data);
 
     res.status(StatusCodes.OK).send({ data });
   } catch (error) {
@@ -129,8 +135,8 @@ const swapTokens = async (
 };
 
 const TokenController = {
-  getAllTokens,
-  getCurrencyPairs,
+  getAll,
+  getPairs,
   getTotalPrice,
   getSwapPrice,
   swapTokens,

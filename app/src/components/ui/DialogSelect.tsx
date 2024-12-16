@@ -85,21 +85,30 @@ const isTrigger = (child: React.ReactNode): child is React.ReactElement => {
   return isValidElement(child) && child.type === DialogSelectTrigger;
 };
 
-const DialogSelectTrigger = ({ children }: { children: React.ReactNode }) => {
+const DialogSelectTrigger = ({
+  children,
+  disabled = false,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+}) => {
   const { value, setOpen } = useContext(DialogSelectContext);
 
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => setOpen(true)}
-      className="flex items-center justify-between gap-1 whitespace-nowrap rounded-full bg-blue-100 px-5 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 sm:text-base"
+      className="flex items-center justify-between gap-1 whitespace-nowrap rounded-full bg-blue-100 px-5 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:pointer-events-none disabled:opacity-50 sm:text-base"
     >
       {value || children}
-      <ChevronDown
-        size={16}
-        strokeWidth={3}
-        className="shrink-0 text-blue-600"
-      />
+      {!disabled && (
+        <ChevronDown
+          size={16}
+          strokeWidth={3}
+          className="shrink-0 text-blue-600"
+        />
+      )}
     </button>
   );
 };

@@ -33,7 +33,7 @@ export const tokenSwapAction = async (params: TParams) => {
   };
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/swap`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/token/swap`,
     {
       method: "POST",
       headers: {

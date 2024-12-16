@@ -1,20 +1,6 @@
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
-import compression from "compression";
-import tokenRouter from "token/token-routes.js";
-import cors from "cors";
+import app from "app.js";
 
-const app = express();
-
-app.use(cors({ credentials: true }));
-app.use(compression());
-app.use(bodyParser.json());
-
-const server = http.createServer(app);
-
-server.listen(8080, () => {
-  console.log("Server running on http://localhost:8080/");
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+  console.log(`Listening: http://localhost:${port}`);
 });
-
-app.use(tokenRouter);

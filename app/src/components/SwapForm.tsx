@@ -28,6 +28,7 @@ import {
 import { useSwapMutation } from "@/hooks/token/useSwapMutation";
 import Button from "./ui/Button";
 import { CheckCircle2Icon, CircleAlertIcon } from "lucide-react";
+import SwapButton from "./SwapButton";
 
 const FORM_DEFAULT_VALUES: z.infer<typeof swapSchema> = {
   sellToken: "",
@@ -94,11 +95,25 @@ export default function SwapForm() {
     onSuccess: () => reset(),
   });
 
+  const handleSwap = () => {
+    const [sellToken, buyToken] = getValues(["sellToken", "buyToken"]);
+    setValue("sellToken", buyToken);
+    setValue("buyToken", sellToken);
+  };
+
   const handleSellTokenChange = (e: string) => {
-    setValue("sellToken", e);
-    setValue("buyToken", "");
-    setValue("sellTokenAmount", "");
-    setValue("buyTokenAmount", "");
+    const buyToken = getValues("buyToken");
+
+    const shouldSwapTokens = e === buyToken;
+
+    if (shouldSwapTokens) {
+      handleSwap();
+    } else {
+      setValue("sellToken", e);
+      setValue("buyToken", "");
+      setValue("sellTokenAmount", "");
+      setValue("buyTokenAmount", "");
+    }
   };
 
   const onSubmit = (values: z.infer<typeof swapSchema>) => {
@@ -177,9 +192,13 @@ export default function SwapForm() {
               <FormItem>
                 <FormControl>
                   <DialogSelect value={field.value}>
-                    <DialogSelectTrigger>
-                      {tokenPairsQuery.isPending ? (
-                        <div className="h-[24px] w-[30px] animate-pulse rounded-xl bg-blue-200" />
+                    <DialogSelectTrigger
+                      disabled={tokenQuery.isLoading || tokenQuery.isError}
+                    >
+                      {tokenQuery.isPending ? (
+                        <div className="h-[24px] w-[48px] animate-pulse rounded-xl bg-blue-200" />
+                      ) : tokenQuery.isError ? (
+                        <p>Something went wrong</p>
                       ) : (
                         "Select token"
                       )}
@@ -208,6 +227,13 @@ export default function SwapForm() {
             )}
           />
         </FormFieldWrapper>
+        <div className="relative z-10 -my-2">
+          <SwapButton
+            onClick={handleSwap}
+            disabled={!watch("sellToken") || !watch("buyToken")}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          />
+        </div>
         <FormFieldWrapper onClick={() => setFocus("buyTokenAmount")}>
           <FormField
             control={control}
@@ -262,14 +288,22 @@ export default function SwapForm() {
               <FormItem>
                 <FormControl>
                   <DialogSelect value={field.value}>
-                    <DialogSelectTrigger>
+                    <DialogSelectTrigger
+                      disabled={
+                        tokenPairsQuery.isLoading ||
+                        tokenQuery.isLoading ||
+                        tokenPairsQuery.isError
+                      }
+                    >
                       {tokenPairsQuery.isPending ? (
-                        <div className="h-[24px] w-[96px] animate-pulse rounded-xl bg-blue-200" />
+                        <div className="h-[24px] w-[114px] animate-pulse rounded-xl bg-blue-200" />
+                      ) : tokenPairsQuery.isError ? (
+                        <p>Something went wrong</p>
                       ) : (
                         "Select token"
                       )}
                     </DialogSelectTrigger>
-                    <DialogSelectContent label="Select token or currency">
+                    <DialogSelectContent label="Select token">
                       {tokenPairsQuery.isLoading && <p>Loading...</p>}
                       {tokenPairsQuery.isError && <p>Something went wrong</p>}
                       {tokenPairsQuery.data &&

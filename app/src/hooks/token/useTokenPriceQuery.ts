@@ -11,7 +11,7 @@ export function useTokenPriceQuery({
     queryKey: ["token-price", token, amount],
     queryFn: async () => {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tokens/${token}/${amount}/price`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/token/price/${token}/${amount}`,
       ).then((res) => res.json());
       return response.data;
     },

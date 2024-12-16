@@ -28,9 +28,9 @@ export function useSwapQuery({
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_BASE_URL
-        }/api/tokens/${sellToken}/${buyToken}/${
+        }/api/v1/token/price/swap/${sellToken}/${buyToken}/${
           conversionType === "EXACT_INPUT" ? sellTokenAmount : buyTokenAmount
-        }/${conversionType}/price/swap`,
+        }/${conversionType}`,
       ).then((res) => res.json());
       onFetch(response.data);
       return response.data;

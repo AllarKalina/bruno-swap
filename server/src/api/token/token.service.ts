@@ -1,15 +1,22 @@
-import db from "db/connection.js";
+import { db } from "db.js";
 import { Worker } from "worker_threads";
+import { Rates, Ticker } from "./token.model.js";
+import { WithoutId } from "mongodb";
 
 const LOCALE_CURRENCY = "EUR";
-const CURRENCIES = ["EUR", "USDC", "USDT"];
+export const SUPPORTED_CURRENCIES = ["EUR", "USDC", "USDT"];
+
+const currencyMap = new Map([
+  ["Euros", "EUR"],
+  ["USD Coin", "USDC"],
+  ["Tether", "USDT"],
+]);
 
 const fetchTokens = async () => {
-  const worker = new Worker("./src/token/token-worker.js");
+  const worker = new Worker("./src/api/token/token-worker.js");
 
-  worker.on("message", (tokens: string[]) => {
-    const collection = db.collection("rates");
-    collection.insertOne(tokens);
+  worker.on("message", (rates: Ticker) => {
+    Rates.insertOne(rates);
   });
 
   worker.on("error", (err) => {
@@ -20,27 +27,41 @@ const fetchTokens = async () => {
 /**
  * Gets all available currencies.
  */
-const getAllCurrencies = () => {
-  fetchTokens();
-  return CURRENCIES;
+const getAllCurrencies = async () => {
+  // fetchTokens();
+  const availableTokens = new Set<string>();
+  const result: WithoutId<Ticker> = await Rates.findOne(
+    {},
+    { projection: { _id: 0 }, sort: { timestamp: -1 } }
+  );
+
+  // Iterate over all the tokens in the database
+  Object.entries(result).map(([ticker, value]) => {
+    const currency = currencyMap.get(value.currency);
+    const currencyIndex = ticker.indexOf(currency);
+    const token = ticker.slice(0, currencyIndex);
+
+    // Add the token to the set of available tokens
+    availableTokens.add(token);
+    // If the currency is not already in the set, add it
+    if (!availableTokens.has(currency)) availableTokens.add(currency);
+  });
+
+  return [...availableTokens];
 };
 
 /**
  * Retrieves token pairs that can be traded with the specified input token.
  */
 const getPairs = async ({ currency }: { currency: string }) => {
-  const collection = db.collection("rates");
-
-  // Fetch the most recent token data from the database
-  const tokens = await collection.findOne(
+  const tokenPairs = new Set<string>();
+  const result = await Rates.findOne(
     {},
     { projection: { _id: 0 }, sort: { timestamp: -1 } }
   );
 
-  const tokenPairs = new Set<string>();
-
   // Iterate over the keys of the tokens object to find pairs
-  Object.keys(tokens).map((token) => {
+  Object.keys(result).map((token) => {
     const index = token.indexOf(currency);
     if (index === 0) {
       // If tokenIn is at the start, add the remaining part as a pair
@@ -130,19 +151,32 @@ const calculateTotalPrice = ({
 };
 
 const calculateSwapPrice = ({
+  tokenIn,
   tokenAmount,
   tokenPair,
   type,
 }: {
+  tokenIn: string;
   tokenAmount: string;
   tokenPair: any;
   type: "EXACT_INPUT" | "EXACT_OUTPUT";
 }) => {
+  const currency = currencyMap.get(tokenPair.currency);
+  const swapDirection = tokenIn === currency;
+
   let swapPrice: number = 0;
-  if (type === "EXACT_INPUT") {
-    swapPrice = Number(tokenAmount) / Number(tokenPair.buy);
+  if (swapDirection) {
+    if (type === "EXACT_INPUT") {
+      swapPrice = Number(tokenAmount) / Number(tokenPair.buy);
+    } else {
+      swapPrice = Number(tokenAmount) * Number(tokenPair.buy);
+    }
   } else {
-    swapPrice = Number(tokenAmount) * Number(tokenPair.buy);
+    if (type === "EXACT_INPUT") {
+      swapPrice = Number(tokenAmount) * Number(tokenPair.sell);
+    } else {
+      swapPrice = Number(tokenAmount) / Number(tokenPair.sell);
+    }
   }
 
   return swapPrice;

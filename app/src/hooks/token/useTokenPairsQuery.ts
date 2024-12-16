@@ -5,11 +5,12 @@ export function useTokenPairsQuery({ token }: { token: string }) {
     queryKey: ["token-pairs", token],
     queryFn: async () => {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tokens/${token}/pairs`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/token/pairs/${token}`,
       ).then((res) => res.json());
       return response.data;
     },
     enabled: !!token,
+    retry: false,
   });
 
   return query;
