@@ -34,3 +34,10 @@ export const transactionSchema = z.object({
     }),
   }),
 });
+
+export type Transaction = z.infer<typeof transactionSchema>;
+
+export type TransactionError = {
+  message: string;
+  errorCode: string;
+};

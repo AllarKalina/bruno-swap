@@ -39,7 +39,8 @@ const getPairs = async (
 
 const getTotalPrice = async (
   req: Request<{ tokenIn: string; tokenInAmount: string }>,
-  res: Response<{ data: string } | { err: string }>
+  res: Response<{ data: string } | { err: string }>,
+  next: NextFunction
 ): Promise<void> => {
   const { tokenIn, tokenInAmount } = req.params;
 
@@ -52,9 +53,9 @@ const getTotalPrice = async (
       tokenPrice: price,
     });
 
-    res.status(StatusCodes.OK).send({ data: totalPrice.toString() });
+    res.status(StatusCodes.OK).json({ data: totalPrice.toString() });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ err: error.message });
+    next(error);
   }
 };
 
@@ -91,8 +92,22 @@ const swapTokens = async (
     amount: string;
     ip: string;
   }>,
-  res: Response<TypedResponse<string>>
-): Promise<void> => {
+  res: Response<
+    TypedResponse<{
+      debit: {
+        currency?: string;
+        amount?: string;
+        amountFloat?: string;
+      };
+      credit: {
+        currency?: string;
+        amount?: string;
+        amountFloat?: string;
+      };
+    }>
+  >,
+  next: NextFunction
+) => {
   const { userId, sourceAccountId, destinationAccountId, amount, ip } =
     req.body;
 
@@ -125,12 +140,20 @@ const swapTokens = async (
     const fullURL = `${process.env.API_BASE_URL}${process.env.SWAP_ENDPOINT}`;
 
     const response = await fetch(fullURL, f);
-    const data = await response.json();
-    console.log(data);
+    const responseJson = await response.json();
 
-    res.status(StatusCodes.OK).send({ data });
+    if (responseJson.errorCode) {
+      throw new Error(responseJson.errorCode);
+    }
+
+    res.status(StatusCodes.OK).json({
+      data: {
+        debit: responseJson.order.debit,
+        credit: responseJson.order.credit,
+      },
+    });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ err: error.message });
+    res.status(400).json({ err: error.message });
   }
 };
 

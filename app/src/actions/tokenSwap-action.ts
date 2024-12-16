@@ -45,5 +45,12 @@ export const tokenSwapAction = async (params: TParams) => {
 
   const data = await response.json();
 
+  if (response.status !== 200) {
+    return {
+      error: true,
+      message: data.err,
+    };
+  }
+
   return data;
 };

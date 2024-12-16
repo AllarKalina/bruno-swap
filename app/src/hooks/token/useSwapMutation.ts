@@ -1,11 +1,15 @@
 import { tokenSwapAction } from "@/actions/tokenSwap-action";
 import { useMutation } from "@tanstack/react-query";
 
-export function useSwapMutation({ onSuccess }: { onSuccess?: () => void }) {
+export function useSwapMutation({
+  onSuccess,
+}: {
+  onSuccess?: (data: any) => void;
+}) {
   const mutation = useMutation({
     mutationFn: tokenSwapAction,
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
+    onSuccess: (data) => {
+      if (onSuccess) onSuccess(data);
     },
   });
 

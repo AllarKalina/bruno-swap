@@ -92,7 +92,9 @@ export default function SwapForm() {
   });
 
   const tokenSwapMutation = useSwapMutation({
-    onSuccess: () => reset(),
+    onSuccess: (data: any) => {
+      if (!data.error) reset();
+    },
   });
 
   const handleSwap = () => {
@@ -329,19 +331,30 @@ export default function SwapForm() {
         <Button type="submit" loading={tokenSwapMutation.isPending}>
           Swap
         </Button>
-        {tokenSwapMutation.isSuccess && !tokenSwapMutation.isPending && (
-          <div className="flex items-center gap-2">
-            <CheckCircle2Icon size={18} className="shrink-0 text-emerald-500" />
-            <p className="text-sm text-slate-500">
-              Successfully swapped 200€ for 0.5 ETH
-            </p>
-          </div>
-        )}
-        {tokenSwapMutation.isError && !tokenSwapMutation.isPending && (
+        {tokenSwapMutation.data &&
+          !tokenSwapMutation.data?.error &&
+          !tokenSwapMutation.isPending && (
+            <div className="flex items-center gap-2">
+              <CheckCircle2Icon
+                size={18}
+                className="shrink-0 text-emerald-500"
+              />
+              <p className="text-sm text-slate-500">
+                Successfully swapped{" "}
+                {tokenSwapMutation.data?.data?.debit?.amountFloat}{" "}
+                {tokenSwapMutation.data?.data?.debit?.currency} for{" "}
+                {tokenSwapMutation.data?.data?.credit?.amountFloat}{" "}
+                {tokenSwapMutation.data?.data?.credit?.currency}
+              </p>
+            </div>
+          )}
+        {tokenSwapMutation.data?.error && !tokenSwapMutation.isPending && (
           <div className="flex items-center gap-2">
             <CircleAlertIcon size={18} className="shrink-0 text-red-500" />
             <p className="text-sm text-slate-500">
-              Oops! Something went wrong during the swap process
+              {tokenSwapMutation.data?.message === "31088"
+                ? "Order is below minimum size"
+                : "Oops! Something went wrong during the swap process"}
             </p>
           </div>
         )}
