@@ -32,7 +32,6 @@ export function errorHandler(
   _: Request,
   res: Response<{ message: string }>
 ) {
-  console.log(res);
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode);
   res.json({
