@@ -58,7 +58,7 @@ export default function SwapForm() {
   } = form;
 
   const debouncedSellTokenInput = useDebounce(watch("sellTokenAmount"));
-  const debouncedBuyTokenInput = useDebounce(watch("sellTokenAmount"));
+  const debouncedBuyTokenInput = useDebounce(watch("buyTokenAmount"));
 
   const tokenQuery = useTokenQuery({
     onFetch: (data) => {
